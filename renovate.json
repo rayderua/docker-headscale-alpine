@@ -11,6 +11,7 @@
       ],
       "ignoreUnstable": true,
       "automerge": true,
+      "automergeType": "branch",
       "dependencyDashboardApproval": false
     }
   ]

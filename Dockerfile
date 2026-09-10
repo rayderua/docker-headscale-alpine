@@ -1,11 +1,12 @@
 # renovate: datasource=docker depName=headscale/headscale versioning=semver
-ARG HEADSCALE_VERSION=v0.29.3
+ARG HEADSCALE_VERSION=v0.29.2
 
-FROM headscale/headscale:${HEADSCALE_VERSION} AS headscale-bin
+FROM ghcr.io/juanfont/headscale:${HEADSCALE_VERSION#v} AS source
 
-FROM alpine:latest
+FROM alpine:3.14
+RUN apk add --no-cache bash
 
-COPY --from=headscale-bin /ko-app/headscale /usr/local/bin/headscale
+COPY --from=source /ko-app/headscale /usr/local/bin/headscale
 
 ENTRYPOINT ["/usr/local/bin/headscale"]
 CMD ["serve"]

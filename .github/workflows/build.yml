@@ -6,16 +6,16 @@ on:
       - main
     paths:
       - 'Dockerfile'
+      - 'entrypoint.sh'
   workflow_dispatch:
     inputs:
       manual_tag:
-        description: 'Use custom tag for manual build'
+        description: 'Build version'
         required: false
         default: ''
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository_owner }}/headscale-alpine
 
 jobs:
   build-and-push:
@@ -26,18 +26,30 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v7
+        uses: actions/checkout@v4
 
-      - name: Parse Headscale Version
+      - name: Parse Headscale Version and Image Name
         id: version
         run: |
           if [ -n "${{ inputs.manual_tag }}" ]; then
-            TAG="${{ inputs.manual_tag }}"
+            RAW_TAG="${{ inputs.manual_tag }}"
           else
-            TAG=$(grep -E 'ARG HEADSCALE_VERSION=' Dockerfile | cut -d'=' -f2)
+            RAW_TAG=$(grep -E 'ARG HEADSCALE_VERSION=' Dockerfile | cut -d'=' -f2 | tr -d ' "')
           fi
+
+          if [[ "$RAW_TAG" == v* ]]; then
+            TAG="$RAW_TAG"
+            VERSION_NO_V="${RAW_TAG#v}"
+          else
+            TAG="v$RAW_TAG"
+            VERSION_NO_V="$RAW_TAG"
+          fi
+
           echo "HEADSCALE_TAG=${TAG}" >> $GITHUB_ENV
-          echo "Build image for ${TAG}"
+          echo "HEADSCALE_VERSION_NO_V=${VERSION_NO_V}" >> $GITHUB_ENV
+          
+          IMAGE_LOWER=$(echo "${{ github.repository_owner }}/headscale-alpine" | tr '[:upper:]' '[:lower:]')
+          echo "IMAGE_LOWER=${IMAGE_LOWER}" >> $GITHUB_ENV
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -55,9 +67,10 @@ jobs:
           context: .
           push: true
           build-args: |
-            HEADSCALE_VERSION=${{ env.HEADSCALE_TAG }}
+            HEADSCALE_VERSION=${{ env.HEADSCALE_VERSION_NO_V }}
           tags: |
-            ghcr.io/${{ env.IMAGE_NAME }}:${{ env.HEADSCALE_TAG }}
+            ghcr.io/${{ env.IMAGE_LOWER }}:${{ env.HEADSCALE_TAG }}
+            ghcr.io/${{ env.IMAGE_LOWER }}:${{ env.HEADSCALE_VERSION_NO_V }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -69,9 +82,11 @@ jobs:
           body: |
             ## Custom Headscale Image with Shell (${{ env.HEADSCALE_TAG }})
 
-            Automated release of a custom Alpine-based Headscale image.
+            **Upstream Image:** `ghcr.io/juanfont/headscale:${{ env.HEADSCALE_VERSION_NO_V }}`
 
             **Docker Image:**
-            `ghcr.io/${{ env.IMAGE_NAME }}:${{ env.HEADSCALE_TAG }}`
+            `ghcr.io/${{ env.IMAGE_LOWER }}:${{ env.HEADSCALE_TAG }}`
+            `ghcr.io/${{ env.IMAGE_LOWER }}:${{ env.HEADSCALE_VERSION_NO_V }}`
           draft: false
           prerelease: false
+          token: ${{ secrets.GITHUB_TOKEN }}
