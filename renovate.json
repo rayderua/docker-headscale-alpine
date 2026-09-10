@@ -6,13 +6,15 @@
   "dependencyDashboardApproval": false,
   "packageRules": [
     {
-      "matchPackageNames": [
-        "headscale/headscale"
-      ],
+      "matchPackageNames": ["ghcr.io/juanfont/headscale"],
       "ignoreUnstable": true,
       "automerge": true,
       "automergeType": "branch",
       "dependencyDashboardApproval": false
+    },
+    {
+      "matchPackageNames": ["alpine"],
+      "versioning": "regex:^(?<major>\\d+)\\.(?<minor>\\d+)(?:\\.(?<patch>\\d+))?$"
     }
   ]
 }
