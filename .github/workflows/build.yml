@@ -58,6 +58,22 @@ jobs:
             HEADSCALE_VERSION=${{ env.HEADSCALE_TAG }}
           tags: |
             ghcr.io/${{ env.IMAGE_NAME }}:${{ env.HEADSCALE_TAG }}
-            ghcr.io/${{ env.IMAGE_NAME }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.HEADSCALE_TAG }}
+          name: Release ${{ env.HEADSCALE_TAG }}
+          body: |
+            ## Custom Headscale Image with Shell (${{ env.HEADSCALE_TAG }})
+
+            Automated release of a custom Alpine-based Headscale image.
+
+            **Docker Image:**
+            `ghcr.io/${{ env.IMAGE_NAME }}:${{ env.HEADSCALE_TAG }}`
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

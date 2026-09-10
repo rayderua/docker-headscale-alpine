@@ -1,6 +1,5 @@
 # renovate: datasource=docker depName=headscale/headscale versioning=semver
-ARG HEADSCALE_VERSION=v0.0.0
-
+ARG HEADSCALE_VERSION=v0.23.0
 
 FROM headscale/headscale:${HEADSCALE_VERSION} AS headscale-bin
 
