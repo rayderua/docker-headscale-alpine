@@ -1,7 +1,7 @@
-# renovate: datasource=github-releases depName=juanfont/headscale versioning=semver
-ARG HEADSCALE_VERSION=v0.29.2
+# renovate: datasource=docker depName=ghcr.io/juanfont/headscale versioning=semver
+ARG HEADSCALE_VERSION=0.29.2
 
-FROM ghcr.io/juanfont/headscale:${HEADSCALE_VERSION#v} AS source
+FROM ghcr.io/juanfont/headscale:${HEADSCALE_VERSION} AS source
 
 FROM alpine:3.24.1
 RUN apk add --no-cache bash
