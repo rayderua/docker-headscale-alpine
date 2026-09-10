@@ -3,11 +3,15 @@
   "extends": [
     "config:recommended"
   ],
+  "dependencyDashboardApproval": false,
   "packageRules": [
     {
-      "matchPackageNames": ["headscale/headscale"],
+      "matchPackageNames": [
+        "headscale/headscale"
+      ],
       "ignoreUnstable": true,
-      "automerge": true
+      "automerge": true,
+      "dependencyDashboardApproval": false
     }
   ]
 }
