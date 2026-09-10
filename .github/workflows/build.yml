@@ -1,0 +1,91 @@
+name: Build Custom Headscale Image
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'Dockerfile'
+  workflow_dispatch:
+    inputs:
+      manual_tag:
+        description: 'Build version'
+        required: false
+        default: ''
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v7
+
+      - name: Parse Headscale Version and Image Name
+        id: version
+        run: |
+          if [ -n "${{ inputs.manual_tag }}" ]; then
+            RAW_TAG="${{ inputs.manual_tag }}"
+          else
+            RAW_TAG=$(grep -E 'ARG HEADSCALE_VERSION=' Dockerfile | cut -d'=' -f2 | tr -d ' "')
+          fi
+
+          if [[ "$RAW_TAG" == v* ]]; then
+            TAG="$RAW_TAG"
+            VERSION_NO_V="${RAW_TAG#v}"
+          else
+            TAG="v$RAW_TAG"
+            VERSION_NO_V="$RAW_TAG"
+          fi
+
+          echo "HEADSCALE_TAG=${TAG}" >> $GITHUB_ENV
+          echo "HEADSCALE_VERSION_NO_V=${VERSION_NO_V}" >> $GITHUB_ENV
+          
+          IMAGE_LOWER=$(echo "${{ github.repository_owner }}/headscale-alpine" | tr '[:upper:]' '[:lower:]')
+          echo "IMAGE_LOWER=${IMAGE_LOWER}" >> $GITHUB_ENV
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          push: true
+          build-args: |
+            HEADSCALE_VERSION=${{ env.HEADSCALE_VERSION_NO_V }}
+          tags: |
+            ghcr.io/${{ env.IMAGE_LOWER }}:${{ env.HEADSCALE_TAG }}
+            ghcr.io/${{ env.IMAGE_LOWER }}:${{ env.HEADSCALE_VERSION_NO_V }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ env.HEADSCALE_TAG }}
+          name: Release ${{ env.HEADSCALE_TAG }}
+          body: |
+            ## Custom Headscale Image with Shell (${{ env.HEADSCALE_TAG }})
+
+            **Upstream Image:** `ghcr.io/juanfont/headscale:${{ env.HEADSCALE_VERSION_NO_V }}`
+
+            **Docker Image:**
+            `ghcr.io/${{ env.IMAGE_LOWER }}:${{ env.HEADSCALE_TAG }}`
+            `ghcr.io/${{ env.IMAGE_LOWER }}:${{ env.HEADSCALE_VERSION_NO_V }}`
+          draft: false
+          prerelease: false
+          token: ${{ secrets.GITHUB_TOKEN }}
