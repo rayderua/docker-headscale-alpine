@@ -6,7 +6,6 @@
   "packageRules": [
     {
       "matchPackageNames": ["headscale/headscale"],
-      "matchUpdateTypes": ["minor", "patch", "major"],
       "ignoreUnstable": true,
       "automerge": true
     }
