@@ -3,7 +3,7 @@ ARG HEADSCALE_VERSION=v0.29.2
 
 FROM ghcr.io/juanfont/headscale:${HEADSCALE_VERSION#v} AS source
 
-FROM alpine:3.14
+FROM alpine:3.24
 RUN apk add --no-cache bash
 
 COPY --from=source /ko-app/headscale /usr/local/bin/headscale
