@@ -6,18 +6,14 @@
   "dependencyDashboardApproval": false,
   "packageRules": [
     {
+      "matchDatasources": ["docker"],
       "matchPackageNames": [
         "ghcr.io/juanfont/headscale"
       ],
       "ignoreUnstable": true,
       "automerge": true,
-      "automergeType": "branch"
-    },
-    {
-      "matchPackageNames": [
-        "alpine"
-      ],
-      "versioning": "regex:^(?<major>\\d+)\\.(?<minor>\\d+)(?:\\.(?<patch>\\d+))?$"
+      "automergeType": "branch",
+      "dependencyDashboardApproval": false
     }
   ]
 }

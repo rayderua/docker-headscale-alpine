@@ -6,7 +6,6 @@ on:
       - main
     paths:
       - 'Dockerfile'
-      - 'entrypoint.sh'
   workflow_dispatch:
     inputs:
       manual_tag:
