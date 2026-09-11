@@ -1,5 +1,5 @@
 # renovate: datasource=docker depName=ghcr.io/juanfont/headscale versioning=semver
-ARG HEADSCALE_VERSION=0.29.2
+ARG HEADSCALE_VERSION=v0.29.2
 
 FROM ghcr.io/juanfont/headscale:${HEADSCALE_VERSION} AS source
 
