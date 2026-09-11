@@ -10,6 +10,7 @@
       "matchPackageNames": [
         "ghcr.io/juanfont/headscale"
       ],
+      "extractVersion": "^v(?<version>.*)$",
       "ignoreUnstable": true,
       "automerge": true,
       "automergeType": "branch",
